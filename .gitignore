@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+#CLion
+.idea
+cmake-build-release
+cmake-build-debug
+
+#MacOS system native
+.DS_Store
