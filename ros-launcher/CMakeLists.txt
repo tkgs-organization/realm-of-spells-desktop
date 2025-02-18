@@ -3,8 +3,12 @@ project(realm-of-spells-launcher)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# Qt packages
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Widgets REQUIRED)
+
+# Boost package
+find_package(Boost 1.86 REQUIRED)
 
 # setup sources directories
 set(FORMS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/forms)
@@ -19,24 +23,32 @@ file(
         SOURCES
         ${FORMS_DIR}/*.ui
         ${SOURCE_DIR}/*.cpp
+        ${SOURCE_DIR}/*.h
         ${SOURCE_DIR}/*/*.cpp
+        ${SOURCE_DIR}/*/*.h
 )
 
-# Add the forms directory to the AUTOUIC search paths
+# add the forms directory to the AUTOUIC search paths
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_AUTOUIC_SEARCH_PATHS} ${FORMS_DIR})
 
-# Add the executable based on platform
+# add the executable based on platform
 if (WIN32)
     add_executable(${PROJECT_NAME} WIN32 ${SOURCES})
 elseif(UNIX)
     add_executable(${PROJECT_NAME} ${SOURCES})
 endif()
 
-target_link_libraries(${PROJECT_NAME} Qt6::Widgets)
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+            Qt6::Widgets
+            ${Boost_LIBRARIES}
+)
 
 # adding all the source directories to include path
-target_include_directories(${PROJECT_NAME} PRIVATE
-        ${FORMS_DIR}
-        ${SOURCE_DIR}
-        ${SOURCE_DIR}/*
+target_include_directories( ${PROJECT_NAME}
+        PRIVATE
+            ${FORMS_DIR}
+            ${SOURCE_DIR}
+            ${SOURCE_DIR}
+            ${Boost_INCLUDE_DIRS}
 )
