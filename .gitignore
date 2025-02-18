@@ -33,8 +33,7 @@
 
 #CLion
 .idea
-cmake-build-release
-cmake-build-debug
+bin
 
 #MacOS system native
 .DS_Store
