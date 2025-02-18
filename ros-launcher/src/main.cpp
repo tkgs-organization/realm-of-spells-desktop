@@ -1,6 +1,12 @@
-#include <iostream>
+#include <QApplication>
 
-int main() {
-    std::cout << "Hello Launcher!" << std::endl;
-    return 0;
+#include <main_window.h>
+
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    MainWindow* window = new MainWindow();
+    window->show();
+
+    return app.exec();
 }
