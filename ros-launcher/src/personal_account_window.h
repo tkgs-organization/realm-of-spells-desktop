@@ -6,6 +6,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
+#include <QProcess>
 
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +20,9 @@ public:
     explicit PersonalAccountWindow(QWidget *parent = nullptr, const QString& username = "unknown traveler");
     ~PersonalAccountWindow() override;
 
+private slots:
+    void OnPlayButtonPressed();
+
 private:
     Ui::PersonalAccountWindow *ui;
     QWidget *centralWidget;
@@ -29,6 +33,9 @@ private:
 
     // play button
     QPushButton *playButton;
+
+    // game process
+    QProcess *gameProcess;
 
 };
 

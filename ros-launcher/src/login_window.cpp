@@ -47,7 +47,7 @@ LoginWindow::LoginWindow(QWidget *parent) :
 
     // register link
     registrationLink = new QLabel(centralWidget);
-    registrationLink->setText(R"(<a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Dont have an account yet?</a>)");
+    registrationLink->setText(R"(<a href="https://tkgs-organization.github.io/realm-of-spells-website/registration">Dont have an account yet?</a>)");
     registrationLink->setTextFormat(Qt::RichText);
     registrationLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
     registrationLink->setOpenExternalLinks(true);

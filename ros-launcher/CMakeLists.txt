@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 
-# Boost package
-find_package(Boost 1.86 REQUIRED)
-
 # setup sources directories
 set(FORMS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -41,7 +38,6 @@ endif()
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
             Qt6::Widgets
-            ${Boost_LIBRARIES}
 )
 
 # adding all the source directories to include path
@@ -50,5 +46,4 @@ target_include_directories( ${PROJECT_NAME}
             ${FORMS_DIR}
             ${SOURCE_DIR}
             ${SOURCE_DIR}
-            ${Boost_INCLUDE_DIRS}
 )
