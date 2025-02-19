@@ -81,7 +81,7 @@ void LoginWindow::handleLogin() {
     this->close();
 
     // proceed to player's personal shelter
-    auto *shelter = new PersonalAccountWindow(centralWidget, loginLineEdit->text());
+    auto *shelter = new PersonalAccountWindow(nullptr, loginLineEdit->text());
     shelter->setAttribute(Qt::WA_DeleteOnClose); // automatically frees memory allocated for this window
     shelter->show();
 }

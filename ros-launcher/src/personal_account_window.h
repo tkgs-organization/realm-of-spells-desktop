@@ -22,19 +22,24 @@ public:
 
 private slots:
     void OnPlayButtonPressed();
+    void OnLogoutButtonPressed();
 
 private:
     Ui::PersonalAccountWindow *ui;
     QWidget *centralWidget;
-    QVBoxLayout *layout;
 
-    // welcome title
+    //main window layout
+    QVBoxLayout *mainLayout;
+
+    // sections layouts
+    QHBoxLayout *topLayout;
+    QHBoxLayout *bottomLayout;
+
     QLabel *welcomeLabel;
 
-    // play button
     QPushButton *playButton;
+    QPushButton *logoutButton;
 
-    // game process
     QProcess *gameProcess;
 
 };
