@@ -8,6 +8,8 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QProcess>
 
+#include "api.hpp"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PersonalAccountWindow; }
@@ -17,21 +19,31 @@ class PersonalAccountWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    explicit PersonalAccountWindow(QWidget *parent = nullptr, const QString& username = "unknown traveler");
+    PersonalAccountWindow(
+        API::TokenPair tokenPair,
+        const std::string& username,
+        QWidget *parent = nullptr
+    );
+
     ~PersonalAccountWindow() override;
 
 private slots:
-    void OnPlayButtonPressed();
-    void OnLogoutButtonPressed();
+    // Handles play button click signal.
+    // Hides player's shelter window and launches the game.
+    void onPlayButtonClicked();
+
+    // Handles Logout button click signal.
+    // Logs user out.
+    void onLogoutButtonClicked();
 
 private:
     Ui::PersonalAccountWindow *ui;
     QWidget *centralWidget;
 
-    //main window layout
+    // Main window layout
     QVBoxLayout *mainLayout;
 
-    // sections layouts
+    // Sections layouts
     QHBoxLayout *topLayout;
     QHBoxLayout *bottomLayout;
 
@@ -41,6 +53,9 @@ private:
     QPushButton *logoutButton;
 
     QProcess *gameProcess;
+
+    // Token pair
+    API::TokenPair tokenPair;
 
 };
 

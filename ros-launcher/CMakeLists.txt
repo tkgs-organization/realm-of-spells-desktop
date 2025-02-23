@@ -3,9 +3,29 @@ project(realm-of-spells-launcher)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(FetchContent)
+
 # Qt packages
-find_package(Qt6Core REQUIRED)
-find_package(Qt6Widgets REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Concurrent)
+
+# libcurl (cURLpp dependency)
+find_package(CURL REQUIRED)
+
+# cURLpp itself
+FetchContent_Declare(
+        curlpp
+        GIT_REPOSITORY https://github.com/jpbarrette/curlpp
+        GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(curlpp)
+
+# nlohmann JSON
+FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json
+        GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 # setup sources directories
 set(FORMS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/forms)
@@ -21,8 +41,10 @@ file(
         ${FORMS_DIR}/*.ui
         ${SOURCE_DIR}/*.cpp
         ${SOURCE_DIR}/*.h
+        ${SOURCE_DIR}/*.hpp
         ${SOURCE_DIR}/*/*.cpp
         ${SOURCE_DIR}/*/*.h
+        ${SOURCE_DIR}/*/*.hpp
 )
 
 # add the forms directory to the AUTOUIC search paths
@@ -38,6 +60,10 @@ endif()
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
             Qt6::Widgets
+            Qt6::Concurrent
+            ${CURL_LIBRARIES}
+            curlpp
+            nlohmann_json::nlohmann_json
 )
 
 # adding all the source directories to include path
