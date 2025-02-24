@@ -2,14 +2,17 @@
 #include "ui_personal_account_window.h"
 
 #include <QMessageBox>
-#include <utility>
+
+#include <chrono>
 
 #include "login_window.h"
 
-PersonalAccountWindow::PersonalAccountWindow(API::TokenPair tokenPair, const std::string& username, QWidget *parent)
+PersonalAccountWindow::PersonalAccountWindow(const API::TokenPair& tokenPair, const std::string& username, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::PersonalAccountWindow)
-    , tokenPair(std::move(tokenPair))
+    , tokenPair(tokenPair.getAccess(), tokenPair.getRefresh())
+    , active(true)
+    , tokenRefreshThread(&PersonalAccountWindow::tokenRefreshTask, this)
 {
     ui->setupUi(this);
 
@@ -59,6 +62,7 @@ PersonalAccountWindow::PersonalAccountWindow(API::TokenPair tokenPair, const std
     // Connecting buttons click signals to handler slots
     connect(playButton, &QPushButton::clicked, this, &PersonalAccountWindow::onPlayButtonClicked);
     connect(logoutButton, &QPushButton::clicked, this, &PersonalAccountWindow::onLogoutButtonClicked);
+
 }
 
 PersonalAccountWindow::~PersonalAccountWindow() {
@@ -98,15 +102,54 @@ void PersonalAccountWindow::onLogoutButtonClicked() {
 
     switch (reply) {
         case QMessageBox::Yes: {
+            // Logout and close current window
             this->close();
-
-            auto *loginWindow = new LoginWindow;
-            loginWindow->setAttribute(Qt::WA_DeleteOnClose);
-            loginWindow->show();
-
-            // todo: potentially other logout logic
             break;
         }
         default: break;
     }
+}
+
+void PersonalAccountWindow::logout() {
+    this->active = false;
+    // Notifying all the waiting threads
+    this->tokenRefreshCV.notify_all();
+    // Joining token refresh task thread
+    this->tokenRefreshThread.join();
+}
+
+void PersonalAccountWindow::tokenRefreshTask() {
+    std::mutex tokenRefreshCVMutex;
+
+    while (this->active) {
+        // Wait with a condition variable
+        std::unique_lock lock(tokenRefreshCVMutex);
+        if (tokenRefreshCV.wait_for(lock, std::chrono::seconds(5), [this]() {
+            return !this->active;
+        })) {
+            break; // End the task. User is no longer active
+        }
+
+        // Handle failure
+        if (!this->tokenPair.refresh()) {
+            QMessageBox::critical(
+                this,
+                "Error",
+                "Something went wrong. Details: Access token refresh failed."
+            );
+            this->close();
+        }
+    }
+}
+
+void PersonalAccountWindow::closeEvent(QCloseEvent *event) {
+    // Logging the user out
+    this->logout();
+
+    // Back to main window
+    auto *loginWindow = new LoginWindow;
+    loginWindow->setAttribute(Qt::WA_DeleteOnClose);
+    loginWindow->show();
+
+    QWidget::closeEvent(event);
 }

@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 
+#include "ros-library/api.h"
+
 #include "personal_account_window.h"
 #include "ui_login_window.h"
 
@@ -81,6 +83,7 @@ LoginWindow::LoginWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::Main
     // Connecting login button release signal to a custom login handler
     connect(loginButton, &QPushButton::clicked, this, &LoginWindow::onLoginButtonClicked);
 
+    // Connecting login response receive signal to a handler
     connect(this, &LoginWindow::loginResponseReceived, this, &LoginWindow::handleLoginResponse);
 
     // Initialise cURL
@@ -159,7 +162,7 @@ void LoginWindow::handleLoginResponse(const std::string &response) {
         loginButton->setText("Login");
         loginButton->setIcon(QIcon());
     } else {
-        // Login successful.
+        // Login successful
 
         cURLpp::terminate(); // Cleanup cURLpp
         this->close(); // Close current window

@@ -12,11 +12,6 @@ namespace API {
 
     // URL for token refresh
     const std::string TOKEN_REFRESH_URL = API_BASE_URL + "token/refresh/";
-
-    struct TokenPair {
-        std::string access;
-        std::string refresh;
-    };
 }
 
 #endif //API_SETTINGS_HPP

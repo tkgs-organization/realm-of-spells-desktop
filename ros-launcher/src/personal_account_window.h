@@ -8,7 +8,9 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QProcess>
 
-#include "api.hpp"
+#include "ros-library/token_pair.h"
+
+#include <thread>
 
 
 QT_BEGIN_NAMESPACE
@@ -20,7 +22,7 @@ Q_OBJECT
 
 public:
     PersonalAccountWindow(
-        API::TokenPair tokenPair,
+        const API::TokenPair& tokenPair,
         const std::string& username,
         QWidget *parent = nullptr
     );
@@ -37,6 +39,15 @@ private slots:
     void onLogoutButtonClicked();
 
 private:
+    // Logs user out
+    void logout();
+
+    // Tries refreshing access token
+    void tokenRefreshTask();
+
+    // Overrides base window close event
+    void closeEvent(QCloseEvent *event) override;
+
     Ui::PersonalAccountWindow *ui;
     QWidget *centralWidget;
 
@@ -56,6 +67,14 @@ private:
 
     // Token pair
     API::TokenPair tokenPair;
+
+    // A flag indicating whether the user is active or not.
+    // Used in multiple threads.
+    std::atomic<bool> active;
+
+    std::thread tokenRefreshThread;
+    // Condition variable for token refresh loop
+    std::condition_variable tokenRefreshCV;
 
 };
 
