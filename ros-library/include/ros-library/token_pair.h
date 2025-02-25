@@ -5,6 +5,15 @@
 #include <mutex>
 
 namespace API {
+    // Provides a way to summarise a request result.
+    struct RequestResult {
+        bool ok;
+        std::string message;
+
+        static RequestResult success() { return RequestResult{true}; }
+        static RequestResult error(const std::string& message) { return RequestResult{false, message}; }
+    };
+
     // Represents an Access/Refresh token pair.
     // Used for communication with the API.
     class TokenPair final {
@@ -27,7 +36,7 @@ namespace API {
         void setRefresh(const std::string& refresh);
 
         // Sends a refresh POST request.
-        bool refresh();
+        RequestResult refresh();
 
     private:
         // The tokens

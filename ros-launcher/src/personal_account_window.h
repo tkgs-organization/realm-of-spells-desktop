@@ -38,6 +38,13 @@ private slots:
     // Logs user out.
     void onLogoutButtonClicked();
 
+    // Handles failure.
+    // Shows message box and logs user out.
+    void onFailure(const std::string& detail);
+
+signals:
+    void failure(const std::string& detail);
+
 private:
     // Logs user out
     void logout();

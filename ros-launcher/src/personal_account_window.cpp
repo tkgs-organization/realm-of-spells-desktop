@@ -62,7 +62,7 @@ PersonalAccountWindow::PersonalAccountWindow(const API::TokenPair& tokenPair, co
     // Connecting buttons click signals to handler slots
     connect(playButton, &QPushButton::clicked, this, &PersonalAccountWindow::onPlayButtonClicked);
     connect(logoutButton, &QPushButton::clicked, this, &PersonalAccountWindow::onLogoutButtonClicked);
-
+    connect(this, &PersonalAccountWindow::failure, this, &PersonalAccountWindow::onFailure);
 }
 
 PersonalAccountWindow::~PersonalAccountWindow() {
@@ -110,6 +110,15 @@ void PersonalAccountWindow::onLogoutButtonClicked() {
     }
 }
 
+void PersonalAccountWindow::onFailure(const std::string &detail) {
+    QMessageBox::critical(
+        this,
+        "Error",
+        (std::string("Something went wrong.\nDetails: ") + std::string(detail)).c_str()
+    );
+    this->close();
+}
+
 void PersonalAccountWindow::logout() {
     this->active = false;
     // Notifying all the waiting threads
@@ -131,14 +140,8 @@ void PersonalAccountWindow::tokenRefreshTask() {
         }
 
         // Handle failure
-        if (!this->tokenPair.refresh()) {
-            QMessageBox::critical(
-                this,
-                "Error",
-                "Something went wrong. Details: Access token refresh failed."
-            );
-            this->close();
-        }
+        auto result = this->tokenPair.refresh();
+        if (!result.ok) emit failure(result.message);
     }
 }
 

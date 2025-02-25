@@ -13,7 +13,7 @@ namespace API {
         : accessToken(access), refreshToken(refresh)
     {}
 
-    bool TokenPair::refresh() {
+    RequestResult TokenPair::refresh() {
         try {
             // Form a token refresh request
             cURLpp::Easy login_request;
@@ -41,17 +41,20 @@ namespace API {
             const nlohmann::json response = nlohmann::json::parse(responseStream.str());
 
             // Update access token
-            if (response.contains("access")) {
+            if (response.contains("access") && response.contains("refresh")) {
                 this->setAccess(response.at("access").get<std::string>());
-                return true;
+                this->setRefresh(response.at("refresh").get<std::string>());
+                return RequestResult::success();
             }
 
             // Fail
-            return false;
+            if (response.contains("detail"))
+                return RequestResult::error(response.at("detail"));
+            return RequestResult::error("Unknown error");
         } catch (cURLpp::RuntimeError&) {
-            return false;
+            return RequestResult::error("Runtime error");
         } catch (cURLpp::LogicError&) {
-            return false;
+            return RequestResult::error("Logic error");
         }
     }
 
