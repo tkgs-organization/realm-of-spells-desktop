@@ -1,181 +1,87 @@
 #include "login_window.h"
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-#include <nlohmann/json.hpp>
-
-#include <QMessageBox>
-#include <QtConcurrent/QtConcurrent>
-
-#include "ros-library/api.h"
+#include <iostream>
+#include <ui_personal_account_window.h>
 
 #include "personal_account_window.h"
 #include "ui_login_window.h"
 
-LoginWindow::LoginWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+LoginWindow::LoginWindow(QWidget *parent) :
+    QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Creating central widget
+    // create central widget
     centralWidget = new QWidget(this);
     this->setCentralWidget(centralWidget);
 
-    // Title
+    // title
     titleLabel = new QLabel(centralWidget);
     titleLabel->setText("Realm of Spells");
     titleLabel->setStyleSheet("font-size: 56pt");
     titleLabel->setAlignment(Qt::AlignCenter);
 
-    // Subtitle
+    // subtitle
     subtitleLabel = new QLabel(centralWidget);
     subtitleLabel->setText("The Online Duelling Card Game");
     subtitleLabel->setStyleSheet("font-size: 24pt");
     subtitleLabel->setAlignment(Qt::AlignCenter);
 
-    // Error label
-    errorLabel = new QLabel(centralWidget);
-    errorLabel->setStyleSheet("font-size: 12pt; color: red;");
-    errorLabel->setAlignment(Qt::AlignCenter);
+    // login text field
+    loginLineEdit = new QLineEdit(centralWidget);
+    loginLineEdit->setMaximumWidth(150);
+    loginLineEdit->setPlaceholderText("Username");
+    loginLineEdit->setAlignment(Qt::AlignCenter);
 
-    // Login text field
-    emailLineEdit = new QLineEdit(centralWidget);
-    emailLineEdit->setMaximumWidth(150);
-    emailLineEdit->setPlaceholderText("Email");
-    emailLineEdit->setAlignment(Qt::AlignCenter);
-
-    // Password text field
+    // password text field
     passwordLineEdit = new QLineEdit(centralWidget);
     passwordLineEdit->setEchoMode(QLineEdit::Password);
     passwordLineEdit->setMaximumWidth(150);
     passwordLineEdit->setPlaceholderText("Password");
     passwordLineEdit->setAlignment(Qt::AlignCenter);
 
-    // Login button
-    loadingAnimation = new QMovie(this);
-    loadingAnimation->setFileName("./assets/loading.gif");
+    // login button
     loginButton = new QPushButton(centralWidget);
     loginButton->setText("Login");
-    loginButton->setIconSize(QSize(30, 30));
+    loginButton->setMaximumWidth(100);
     loginButton->setStyleSheet("font-size: 18pt;");
 
-    // Register link
+    // register link
     registrationLink = new QLabel(centralWidget);
-    registrationLink->setText(
-        R"(<a href="https://tkgs-organization.github.io/realm-of-spells-website/registration">Dont have an account yet?</a>)");
+    registrationLink->setText(R"(<a href="https://tkgs-organization.github.io/realm-of-spells-website/registration">Dont have an account yet?</a>)");
     registrationLink->setTextFormat(Qt::RichText);
     registrationLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
     registrationLink->setOpenExternalLinks(true);
     registrationLink->setAlignment(Qt::AlignCenter);
 
+    // layout
     layout = new QVBoxLayout(centralWidget);
 
-    // Adding all the widgets to the layout
+    // adding all the widgets to the layout
     layout->addWidget(titleLabel);
     layout->addWidget(subtitleLabel);
     layout->addStretch();
-    layout->addWidget(errorLabel, 0, Qt::AlignHCenter);
-    layout->addWidget(emailLineEdit, 0, Qt::AlignHCenter);
+    layout->addWidget(loginLineEdit, 0, Qt::AlignHCenter);
     layout->addWidget(passwordLineEdit, 0, Qt::AlignHCenter);
     layout->addWidget(loginButton, 0, Qt::AlignHCenter);
     layout->addStretch();
     layout->addWidget(registrationLink);
 
-    // Connecting login button release signal to a custom login handler
-    connect(loginButton, &QPushButton::clicked, this, &LoginWindow::onLoginButtonClicked);
-
-    // Connecting login response receive signal to a handler
-    connect(this, &LoginWindow::loginResponseReceived, this, &LoginWindow::handleLoginResponse);
-
-    // Initialise cURL
-    cURLpp::initialize();
+    // connecting login button release signal to a custom login handler
+    connect(loginButton, &QPushButton::released, this, &LoginWindow::handleLogin);
 }
 
 LoginWindow::~LoginWindow() {
     delete ui;
-    delete centralWidget; // Also deletes all children
+    delete centralWidget; // also deletes all children
 }
 
-void LoginWindow::onLoginButtonClicked() {
-    // Validate input
-    if (emailLineEdit->text().isEmpty() || passwordLineEdit->text().isEmpty()) {
-        errorLabel->setText("Please fill the fields below");
-        return;
-    }
+void LoginWindow::handleLogin() {
+    qDebug() << "Assuming login was successful. Opening personal shelter.";
 
-    // Removing the text from login button and putting a loading animation
-    loginButton->setText("");
-    connect(loadingAnimation, &QMovie::frameChanged, loginButton, [this] {
-        loginButton->setIcon(loadingAnimation->currentPixmap());
-    });
-    loadingAnimation->start();
+    this->close();
 
-    QThread* httpRequestThread = QThread::create([this] {
-        try {
-            // Form a token obtain request
-            cURLpp::Easy login_request;
-            login_request.setOpt(cURLpp::options::Url(API::TOKEN_OBTAIN_URL));
-
-            // Token obtain POST request body
-            const nlohmann::json body = {
-                {"email", emailLineEdit->text().toStdString()},
-                {"password", passwordLineEdit->text().toStdString()},
-            };
-
-            // Informing that we are using JSON
-            login_request.setOpt(cURLpp::options::HttpHeader({"Content-Type: application/json"}));
-            // Adding the body and its size to request
-            login_request.setOpt(curlpp::options::PostFields(body.dump()));
-            login_request.setOpt(curlpp::options::PostFieldSize(static_cast<long>(body.dump().length())));
-
-            // Performing the request
-            login_request.perform();
-
-            // Retrieving the response and parsing it as JSON
-            std::ostringstream responseStream;
-            responseStream << login_request;
-
-            // Emitting a signal indicating that the response has been received
-            emit loginResponseReceived(responseStream.str());
-        } catch (cURLpp::RuntimeError &e) {
-            QMessageBox::critical(this, "Runtime error", e.what());
-        } catch (cURLpp::LogicError &e) {
-            QMessageBox::critical(this, "Logic error", e.what());
-        }
-    });
-
-    // When the thread is finished, it is going to get deleted safely
-    connect(httpRequestThread, &QThread::finished, httpRequestThread, &QThread::deleteLater);
-    httpRequestThread->start();
-}
-
-void LoginWindow::handleLoginResponse(const std::string &response) {
-    // Parse response string
-    const auto response_json = nlohmann::json::parse(response);
-
-    // Validate the response
-    if (response_json.contains("detail")) {
-        // Fail
-        errorLabel->setText(QString::fromStdString(response_json.at("detail").get<std::string>()));
-
-        // Reset login button
-        loadingAnimation->stop();
-        loginButton->setText("Login");
-        loginButton->setIcon(QIcon());
-    } else {
-        // Login successful
-
-        cURLpp::terminate(); // Cleanup cURLpp
-        this->close(); // Close current window
-
-        // Proceed to player's personal shelter
-        auto *shelter = new PersonalAccountWindow(
-            {
-                response_json.at("access").get<std::string>(),
-                response_json.at("refresh").get<std::string>(),
-            },
-            emailLineEdit->text().toStdString()
-        );
-        shelter->setAttribute(Qt::WA_DeleteOnClose); // Automatically frees memory allocated for this window
-        shelter->show();
-    }
+    // proceed to player's personal shelter
+    auto *shelter = new PersonalAccountWindow(nullptr, loginLineEdit->text());
+    shelter->setAttribute(Qt::WA_DeleteOnClose); // automatically frees memory allocated for this window
+    shelter->show();
 }

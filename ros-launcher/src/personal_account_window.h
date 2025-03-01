@@ -8,10 +8,6 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QProcess>
 
-#include "ros-library/token_pair.h"
-
-#include <thread>
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class PersonalAccountWindow; }
@@ -21,47 +17,21 @@ class PersonalAccountWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    PersonalAccountWindow(
-        const API::TokenPair& tokenPair,
-        const std::string& username,
-        QWidget *parent = nullptr
-    );
-
+    explicit PersonalAccountWindow(QWidget *parent = nullptr, const QString& username = "unknown traveler");
     ~PersonalAccountWindow() override;
 
 private slots:
-    // Handles play button click signal.
-    // Hides player's shelter window and launches the game.
-    void onPlayButtonClicked();
-
-    // Handles Logout button click signal.
-    // Logs user out.
-    void onLogoutButtonClicked();
-
-    // Handles failure.
-    // Shows message box and logs user out.
-    void onFailure(const std::string& detail);
-
-signals:
-    void failure(const std::string& detail);
+    void OnPlayButtonPressed();
+    void OnLogoutButtonPressed();
 
 private:
-    // Logs user out
-    void logout();
-
-    // Tries refreshing access token
-    void tokenRefreshTask();
-
-    // Overrides base window close event
-    void closeEvent(QCloseEvent *event) override;
-
     Ui::PersonalAccountWindow *ui;
     QWidget *centralWidget;
 
-    // Main window layout
+    //main window layout
     QVBoxLayout *mainLayout;
 
-    // Sections layouts
+    // sections layouts
     QHBoxLayout *topLayout;
     QHBoxLayout *bottomLayout;
 
@@ -71,17 +41,6 @@ private:
     QPushButton *logoutButton;
 
     QProcess *gameProcess;
-
-    // Token pair
-    API::TokenPair tokenPair;
-
-    // A flag indicating whether the user is active or not.
-    // Used in multiple threads.
-    std::atomic<bool> active;
-
-    std::thread tokenRefreshThread;
-    // Condition variable for token refresh loop
-    std::condition_variable tokenRefreshCV;
 
 };
 
