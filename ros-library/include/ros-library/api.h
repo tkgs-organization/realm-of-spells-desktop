@@ -5,13 +5,13 @@
 
 namespace API {
     // Base URL for API access
-    const std::string API_BASE_URL = "3.78.71.239:8000/api/auth/";
+    const std::string API_BASE_URL = "http://3.124.202.219:8000/api/";
 
     // URL for token obtain (login)
-    const std::string TOKEN_OBTAIN_URL = API_BASE_URL + "token/get/";
+    const std::string TOKEN_OBTAIN_URL = API_BASE_URL + "auth/token/get/";
 
     // URL for token refresh
-    const std::string TOKEN_REFRESH_URL = API_BASE_URL + "token/refresh/";
+    const std::string TOKEN_REFRESH_URL = API_BASE_URL + "auth/token/refresh/";
 }
 
 #endif //API_SETTINGS_HPP

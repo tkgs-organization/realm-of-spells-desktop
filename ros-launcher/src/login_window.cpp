@@ -121,18 +121,17 @@ void LoginWindow::onLoginButtonClicked() {
                 {"password", passwordLineEdit->text().toStdString()},
             };
 
+            std::ostringstream responseStream;
+
             // Informing that we are using JSON
             login_request.setOpt(cURLpp::options::HttpHeader({"Content-Type: application/json"}));
             // Adding the body and its size to request
             login_request.setOpt(curlpp::options::PostFields(body.dump()));
             login_request.setOpt(curlpp::options::PostFieldSize(static_cast<long>(body.dump().length())));
+            login_request.setOpt(cURLpp::options::WriteStream(&responseStream));
 
             // Performing the request
             login_request.perform();
-
-            // Retrieving the response and parsing it as JSON
-            std::ostringstream responseStream;
-            responseStream << login_request;
 
             // Emitting a signal indicating that the response has been received
             emit loginResponseReceived(responseStream.str());
