@@ -3,9 +3,10 @@ project(realm-of-spells-launcher)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(FetchContent)
+
 # Qt packages
-find_package(Qt6Core REQUIRED)
-find_package(Qt6Widgets REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Concurrent)
 
 # setup sources directories
 set(FORMS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/forms)
@@ -21,8 +22,10 @@ file(
         ${FORMS_DIR}/*.ui
         ${SOURCE_DIR}/*.cpp
         ${SOURCE_DIR}/*.h
+        ${SOURCE_DIR}/*.hpp
         ${SOURCE_DIR}/*/*.cpp
         ${SOURCE_DIR}/*/*.h
+        ${SOURCE_DIR}/*/*.hpp
 )
 
 # add the forms directory to the AUTOUIC search paths
@@ -38,12 +41,14 @@ endif()
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
             Qt6::Widgets
+            Qt6::Concurrent
+            realm-of-spells-library
 )
 
 # adding all the source directories to include path
 target_include_directories( ${PROJECT_NAME}
-        PRIVATE
+        PUBLIC
             ${FORMS_DIR}
             ${SOURCE_DIR}
-            ${SOURCE_DIR}
+            ros-library
 )

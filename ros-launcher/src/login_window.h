@@ -7,6 +7,7 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
+#include <QMovie>
 
 
 QT_BEGIN_NAMESPACE
@@ -21,23 +22,34 @@ public:
     ~LoginWindow() override;
 
 private slots:
-    void handleLogin();
+    // Handles user login.
+    // Closes login window and proceeds to player's shelter on success.
+    void onLoginButtonClicked();
 
 private:
+    void handleLoginResponse(const std::string& response);
+
     Ui::MainWindow *ui;
     QWidget *centralWidget;
     QVBoxLayout *layout;
 
-    // title
+    // Title
     QLabel *titleLabel;
     QLabel *subtitleLabel;
 
-    // login block
-    QLineEdit *loginLineEdit;
+    // Login block
+    QLabel *errorLabel;
+    QLineEdit *emailLineEdit;
     QLineEdit *passwordLineEdit;
+
+    // Loading animation (GIF) for a login button
+    QMovie *loadingAnimation;
     QPushButton *loginButton;
 
     QLabel *registrationLink;
+
+signals:
+    void loginResponseReceived(const std::string& response);
 
 };
 
