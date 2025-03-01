@@ -16,26 +16,26 @@ namespace API {
     RequestResult TokenPair::refresh() {
         try {
             // Form a token refresh request
-            cURLpp::Easy login_request;
-            login_request.setOpt(cURLpp::options::Url(TOKEN_REFRESH_URL));
+            cURLpp::Easy refresh_request;
+            refresh_request.setOpt(cURLpp::options::Url(TOKEN_REFRESH_URL));
 
             // Request body
             const nlohmann::json body = {
                 {"refresh", this->getRefresh()},
             };
 
+            // String stream for retrieving
+            std::ostringstream responseStream;
+
             // Informing that we are using JSON
-            login_request.setOpt(cURLpp::options::HttpHeader({"Content-Type: application/json"}));
+            refresh_request.setOpt(cURLpp::options::HttpHeader({"Content-Type: application/json"}));
             // Adding the body and its size to request
-            login_request.setOpt(curlpp::options::PostFields(body.dump()));
-            login_request.setOpt(curlpp::options::PostFieldSize(static_cast<long>(body.dump().length())));
+            refresh_request.setOpt(curlpp::options::PostFields(body.dump()));
+            refresh_request.setOpt(curlpp::options::PostFieldSize(static_cast<long>(body.dump().length())));
+            refresh_request.setOpt(cURLpp::options::WriteStream(&responseStream));
 
             // Performing the request
-            login_request.perform();
-
-            // Retrieving the response and parsing it as JSON
-            std::ostringstream responseStream;
-            responseStream << login_request;
+            refresh_request.perform();
 
             // Parsing the response
             const nlohmann::json response = nlohmann::json::parse(responseStream.str());

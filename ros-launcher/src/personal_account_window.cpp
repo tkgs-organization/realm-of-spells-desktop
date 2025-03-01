@@ -133,7 +133,7 @@ void PersonalAccountWindow::tokenRefreshTask() {
     while (this->active) {
         // Wait with a condition variable
         std::unique_lock lock(tokenRefreshCVMutex);
-        if (tokenRefreshCV.wait_for(lock, std::chrono::seconds(5), [this]() {
+        if (tokenRefreshCV.wait_for(lock, std::chrono::seconds(15), [this] {
             return !this->active;
         })) {
             break; // End the task. User is no longer active
@@ -141,7 +141,11 @@ void PersonalAccountWindow::tokenRefreshTask() {
 
         // Handle failure
         auto result = this->tokenPair.refresh();
-        if (!result.ok) emit failure(result.message);
+        if (!result.ok) {
+            emit failure(result.message);
+            break;
+        }
+
     }
 }
 
